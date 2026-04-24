@@ -202,6 +202,5 @@ Only pending transactions within the `LOOKBACK_DAYS` window are checked. If a tr
 
 ---
 
-## Acknowledgements
-
-Built for use with [Up Bank](https://up.com.au) and [Actual Budget](https://actualbudget.org). Not affiliated with either.
+## Disclaimer
+This project was developed with the assistance of Claude by Anthropic. All code has been reviewed and tested, but use at your own risk. This project is not affiliated with Up Bank or Actual Budget.
