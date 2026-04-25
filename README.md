@@ -8,6 +8,7 @@ Automatically syncs [Up Bank](https://up.com.au) transactions into [Actual Budge
 - Removes pending transactions that never settled (failed/reversed payments)
 - Sends error notifications via Telegram (optional)
 - Fully configurable via environment variables — no code changes needed
+- Compatible with 2UP and Savers
 
 ---
 
