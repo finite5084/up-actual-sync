@@ -70,8 +70,9 @@ TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 API_BASE        = "https://api.up.com.au/api/v1"
 PAGE_SIZE       = 100
-MAX_RETRIES     = 3      # retries on HTTP 429 / transient errors
-RETRY_BACKOFF   = 10     # seconds to wait between retries (doubles each attempt)
+MAX_RETRIES     = 5      # retries on HTTP 429 / transient network errors
+RETRY_BACKOFF   = 30     # seconds to wait between retries (doubles each attempt)
+                         # sequence: 30s, 60s, 120s, 240s — total ~7.5min before giving up
 
 def _parse_int_env(name: str, default: int, min_val: int, max_val: int) -> int:
     """Read an optional integer env var, falling back to default if missing or invalid."""
@@ -254,12 +255,14 @@ def fetch_up_transactions_for_account(token: str, account_id: str, since: str) -
                     continue
                 resp.raise_for_status()
                 break
-            except requests.RequestException:
+            except requests.RequestException as req_exc:
                 if attempt == MAX_RETRIES:
                     raise
                 wait = RETRY_BACKOFF * (2 ** (attempt - 1))
-                log.warning("Request failed — retrying in %ds (attempt %d/%d)",
-                            wait, attempt, MAX_RETRIES)
+                log.warning(
+                    "Network error (%s) — retrying in %ds (attempt %d/%d)",
+                    type(req_exc).__name__, wait, attempt, MAX_RETRIES,
+                )
                 time.sleep(wait)
         else:
             raise requests.HTTPError(f"Failed after {MAX_RETRIES} attempts")
