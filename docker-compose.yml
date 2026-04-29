@@ -9,15 +9,7 @@ services:
   #   docker exec up-actual-sync python up_bank_to_actual.py --list-accounts
   #   docker exec up-actual-sync python up_bank_to_actual.py --once
   up-sync:
-    image: ghcr.io/finite5084/up-actual-sync:latest   # replace your-username
+    image: ghcr.io/finite5084/up-actual-sync:latest
     container_name: up-actual-sync
     restart: unless-stopped
     env_file: .env
-    networks:
-      - actual_network
-
-networks:
-  actual_network:
-    external: true
-    name: actual_network   # change to match your Actual Budget container's network
-                           # run: docker inspect <actual-container-name> | grep -A5 Networks

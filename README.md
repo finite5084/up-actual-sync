@@ -46,15 +46,7 @@ ACTUAL_SERVER_URL=http://actual-budget:5006
 ACTUAL_SYNC_ID=your-sync-id
 ```
 
-**3. Update the Docker network name**
-
-Edit `docker-compose.yml` and set the `name:` under `networks` to match the Docker network your Actual Budget container is on:
-
-```bash
-docker inspect <actual-container-name> | grep -A5 Networks
-```
-
-**4. Pull and start**
+**3. Pull and start**
 
 ```bash
 docker compose pull
@@ -206,9 +198,7 @@ No state is written to disk — everything is held in memory and Actual Budget h
 
 **`Name or service not known` when connecting to Actual**
 
-The container can't reach your Actual Budget server. Make sure:
-- The container is on the same Docker network as Actual Budget
-- `ACTUAL_SERVER_URL` uses the container name, not an IP address e.g. `http://actual-budget:5006`
+The container can't reach your Actual Budget server. Make sure `ACTUAL_SERVER_URL` is correct and reachable from the host — use the server's IP or hostname rather than `localhost`.
 
 **`No Actual account named '...' — skipping`**
 
