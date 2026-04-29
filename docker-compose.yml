@@ -3,12 +3,13 @@ services:
   # Start:   docker compose up -d
   # Logs:    docker compose logs -f
   # Stop:    docker compose down
+  # Update:  docker compose pull && docker compose up -d
   #
   # One-off commands (run against the already-running container):
   #   docker exec up-actual-sync python up_bank_to_actual.py --list-accounts
   #   docker exec up-actual-sync python up_bank_to_actual.py --once
   up-sync:
-    build: .
+    image: ghcr.io/finite5084/up-actual-sync:latest   # replace your-username
     container_name: up-actual-sync
     restart: unless-stopped
     env_file: .env
@@ -17,6 +18,6 @@ services:
 
 networks:
   actual_network:
-    external: true   # join an existing network rather than creating a new one
-    name: actual_network   # change this to match your Actual Budget container's network
+    external: true
+    name: actual_network   # change to match your Actual Budget container's network
                            # run: docker inspect <actual-container-name> | grep -A5 Networks
