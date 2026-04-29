@@ -22,22 +22,18 @@ Automatically syncs [Up Bank](https://up.com.au) transactions into [Actual Budge
 
 ## Quick Start
 
-**1. Clone the repo**
+**1. Create a project folder and download the compose file**
 
 ```bash
-git clone https://github.com/your-username/up-actual-sync
-cd up-actual-sync
+mkdir up-actual-sync && cd up-actual-sync
+curl -o docker-compose.yml https://raw.githubusercontent.com/finite5084/up-actual-sync/main/docker-compose.yml
+curl -o .env.example https://raw.githubusercontent.com/finite5084/up-actual-sync/main/.env.example
 ```
 
 **2. Create your `.env` file**
 
 ```bash
 cp .env.example .env
-```
-
-**3. Fill in the required values**
-
-```bash
 nano .env
 ```
 
@@ -50,7 +46,7 @@ ACTUAL_SERVER_URL=http://actual-budget:5006
 ACTUAL_SYNC_ID=your-sync-id
 ```
 
-**4. Update the Docker network name**
+**3. Update the Docker network name**
 
 Edit `docker-compose.yml` and set the `name:` under `networks` to match the Docker network your Actual Budget container is on:
 
@@ -58,11 +54,43 @@ Edit `docker-compose.yml` and set the `name:` under `networks` to match the Dock
 docker inspect <actual-container-name> | grep -A5 Networks
 ```
 
-**5. Build and start**
+**4. Pull and start**
+
+```bash
+docker compose pull
+docker compose up -d
+docker compose logs -f
+```
+
+No build step needed — the image is pulled directly from GitHub Container Registry.
+
+**Updating to the latest version:**
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+---
+
+## Building from Source
+
+If you'd prefer to build the image yourself rather than pulling from the registry:
+
+```bash
+git clone https://github.com/finite5084/up-actual-sync
+cd up-actual-sync
+```
+
+Then replace the `image:` line in `docker-compose.yml` with:
+
+```yaml
+build: .
+```
+
+And run:
 
 ```bash
 docker compose up -d
-docker compose logs -f
 ```
 
 ---
@@ -204,6 +232,6 @@ Only pending transactions within the `LOOKBACK_DAYS` window are checked. If a tr
 
 ---
 
-Disclaimer
+## Disclaimer
 
-This project was developed with the assistance of Claude by Anthropic. All code has been reviewed and tested, but use at your own risk. This project is not affiliated with Up Bank or Actual Budget.
+This project was developed with the assistance of ClaudeAI. All code has been reviewed and tested, but use at your own risk. This project is not affiliated with Up Bank or Actual Budget.
