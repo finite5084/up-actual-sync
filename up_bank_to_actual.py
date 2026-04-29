@@ -409,6 +409,14 @@ def sync_to_actual(
                 total_changed += 1
                 log.info("  [%s] %s  %s  %.2f", account_name, date, payee, float(amount))
 
+        # ── Run rules on newly imported transactions ───────────────────────
+        # Runs your Actual payee/category rules against the transactions
+        # imported in this batch. Passing already_matched limits it to only
+        # the transactions we just touched rather than the entire database.
+        if already_matched:
+            actual.run_rules(already_matched)
+            log.info("  [%s] Rules applied to %d transaction(s)", account_name, len(already_matched))
+
         # cleared is an INTEGER column (0/1), so we compare explicitly.
         # t.delete() sets tombstone=1 (soft delete), consistent with actualpy.
         actual_txns = get_transactions(actual.session, since_dt, today, account=acct)

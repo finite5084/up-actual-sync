@@ -6,9 +6,9 @@ Automatically syncs [Up Bank](https://up.com.au) transactions into [Actual Budge
 - Imports into Actual Budget using [actualpy](https://github.com/bvanelli/actualpy)
 - Handles pending → cleared updates automatically
 - Removes pending transactions that never settled (failed/reversed payments)
+- Runs your Actual Budget rules automatically after each import
 - Sends error notifications via Telegram (optional)
 - Fully configurable via environment variables — no code changes needed
-- Compatible with 2UP and Savers
 
 ---
 
@@ -156,9 +156,10 @@ To receive error alerts on your phone:
 On each poll the script:
 
 1. Fetches transactions from the last `LOOKBACK_DAYS` days for each mapped account via the Up Bank API
-2. Connects to your Actual Budget instance and reconciles each transaction using `reconcile_transaction` — this handles deduplication by `imported_id`, updates pending → cleared status, and runs your Actual payee rules automatically
-3. Checks for any pending transactions in Actual that have disappeared from Up (failed/reversed payments) and soft-deletes them
-4. Sleeps until the next poll
+2. Connects to your Actual Budget instance and reconciles each transaction using `reconcile_transaction` — this handles deduplication by `imported_id` and updates pending → cleared status
+3. Runs your Actual Budget rules against the imported transactions to apply payee matching and category assignments
+4. Checks for any pending transactions in Actual that have disappeared from Up (failed/reversed payments) and soft-deletes them
+5. Sleeps until the next poll
 
 No state is written to disk — everything is held in memory and Actual Budget handles deduplication natively via the `imported_id` field.
 
@@ -203,5 +204,6 @@ Only pending transactions within the `LOOKBACK_DAYS` window are checked. If a tr
 
 ---
 
-## Disclaimer
+Disclaimer
+
 This project was developed with the assistance of Claude by Anthropic. All code has been reviewed and tested, but use at your own risk. This project is not affiliated with Up Bank or Actual Budget.
