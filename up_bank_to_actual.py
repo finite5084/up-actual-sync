@@ -432,9 +432,47 @@ def sync_to_actual(
     actual.commit()
     log.info("✓ Sync complete — changed: %d  stale deleted: %d", total_changed, total_deleted)
 
+# ── Connectivity checks ───────────────────────────────────────────────────────
+
+def check_connectivity(token: str, server_url: str) -> bool:
+    """
+    Check that both Up Bank and Actual Budget are reachable before attempting
+    a sync. Returns True if both are reachable, False otherwise.
+    Sends a single clean Telegram message on failure — no Python tracebacks.
+    """
+    issues = []
+
+    # Check Up Bank
+    try:
+        resp = requests.get(f"{API_BASE}/util/ping", headers=up_headers(token), timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException:
+        issues.append("Up Bank API (api.up.com.au) is not reachable")
+
+    # Check Actual Budget — a simple HTTP request to the server root is enough
+    try:
+        resp = requests.get(server_url, timeout=10)
+        # Any response (even 401/404) means the server is up
+    except requests.RequestException:
+        issues.append(f"Actual Budget server ({server_url}) is not reachable")
+
+    if issues:
+        msg = "Connectivity check failed — skipping this poll:\n" + "\n".join(f"  • {i}" for i in issues)
+        log.warning(msg)
+        notify_error(msg)
+        return False
+
+    return True
+
+
 # ── Poll cycle ────────────────────────────────────────────────────────────────
 
 def poll(token: str, password: str, server_url: str, sync_id: str, account_map: dict):
+    # Check both services are reachable before doing anything else.
+    # Sends a clean Telegram message on failure rather than a Python traceback.
+    if not check_connectivity(token, server_url):
+        return
+
     since = (
         datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)
     ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
@@ -480,9 +518,10 @@ def poll(token: str, password: str, server_url: str, sync_id: str, account_map: 
             sync_to_actual(up_txns_by_account, account_map, actual, since)
 
     except Exception as exc:
-        msg = f"Actual Budget error: {exc}"
-        log.error(msg, exc_info=True)
-        notify_error(msg, exc)
+        # Connection was confirmed above so this is an unexpected error —
+        # log it with full detail but send a clean summary to Telegram.
+        log.error("Actual Budget error: %s", exc, exc_info=True)
+        notify_error(f"Actual Budget error: {type(exc).__name__}: {exc}")
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
